@@ -102,7 +102,8 @@ def formatVLW(byte1, byte2, byte3, byte4, byte5, byte6):
 	return nmea_sentence(sentence)
 
 
-def formatMTW(mtw):
+def formatMTW(byte2):
+	temp = (byte2 - 100.0)/10
 	if (mtw == None): 
 		return None
 	tmp = '{:3.1f}'.format(mtw)
@@ -142,8 +143,7 @@ def translate_st_to_nmea (data):
 			return formatVLW(byte1, byte2, byte3, byte4, byte5, byte6)
 		if datagram == ord('\x27'):
 			byte2 = getByte(bytes[2])
-			temp = (byte2 - 100.0)/10
-			return formatMTW(temp)
+			return formatMTW(byte2)
 		elif datagram == ord('\x89'): # Coming from ST50 Compass
 			byte1 = getByte(bytes[1])
 			byte2 = getByte(bytes[2])
