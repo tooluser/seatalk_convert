@@ -64,12 +64,13 @@ def nmea_sentence(sentence)
 	return "$" + talker + sentence + "*" + nmeaChecksum(sentence) + "\r\n"
 
 
-def formatHDM(hdm):
-	if (hdm == None): 
+def formatHDM(byte1, byte2):
+	hdg = ((byte1 // 16) & ord('\x03')) * 90 + (byte2 & ord('\x3f')) * 2 + ((byte1 // 16 // 8) & ord('\x01'))
+	if (hdg == None): 
 		return None
-	hdm = '{:3.1f}'.format(hdm)
+	hdg = '{:3.1f}'.format(hdg)
 
-	sentence = "HDM,%s,M" % (hdm)
+	sentence = "HDM,%s,M" % (hdg)
 	
 	return nmea_sentence(sentence)
 
@@ -145,10 +146,9 @@ def translate_st_to_nmea (data):
 			temp = (byte2 - 100.0)/10
 			return formatMTW(temp)
 		elif datagram == ord('\x89'): # Coming from ST50 Compass
-			u2 = getByte(bytes[1])
-			vw = getByte(bytes[2])
-			hdg = ((u2 // 16) & ord('\x03')) * 90 + (vw & ord('\x3f')) * 2 + ((u2 // 16 // 8) & ord('\x01'))
-			return formatHDM(hdg)
+			byte1 = getByte(bytes[1])
+			byte2 = getByte(bytes[2])
+			return formatHDM(byte1, byte2)
 		elif datagram == ord('\x9c'): # Coming from ST2000
 			u2 = getByte(bytes[1])
 			vw = getByte(bytes[2])
