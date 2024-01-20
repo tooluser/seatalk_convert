@@ -13,21 +13,25 @@
 
 import pigpio, time, socket, signal, sys, os
 
-port=4041	# Define udp port for sending
+port=4041				# Define UDP port for sending
 ip= '127.0.0.1' # Define ip default localhost 127.0.0.1
-gpio= 2  	# Define gpio where the SeaTalk1 (yellow wire) is sensed
+gpio = 2  			# Define gpio where the SeaTalk1 (yellow wire) is sensed
 invert = 1      # Define if input signal shall be inverted 0 => not inverted, 1 => Inverted 
 pud = 2         # define if using internal RPi pull up/down 0 => No, 1= Pull down, 2=Pull up
+talker = "RM" 	# Talker on the NMEA bus
 
-print ("Shutting down old gpiod")
-os.system("pkill pigpiod")
-print ("...waiting for it to shut down")
-time.sleep(1)
-print ("Starting new gpiod")
-os.system("pigpiod")
-print ("...waiting for new gpiod to start up")
-time.sleep(1)
-print ("Ready")
+def initialize_pigpiod():  
+	print ("Shutting down old gpiod")
+	os.system("pkill pigpiod")
+	print ("...waiting for it to shut down")
+	time.sleep(1)
+	print ("Starting new gpiod")
+	os.system("pigpiod")
+	print ("...waiting for new gpiod to start up")
+	time.sleep(1)
+	print ("Ready")
+
+initialize_pigpiod()
 
 stw = 555
 hdg = 555
@@ -56,15 +60,18 @@ def nmeaChecksum(s): # str -> two hex digits in str
 	else:
 		return '0'+hexstr
 
+def nmea_sentence(sentence)
+	return "$" + talker + sentence + "*" + nmeaChecksum(sentence) + "\r\n"
+
 
 def formatHDM(hdm):
 	if (hdm == None): 
 		return None
 	hdm = '{:3.1f}'.format(hdm)
 
-	sentence = "$RMHDM,%s,M" % (hdm)
+	sentence = "HDM,%s,M" % (hdm)
 	
-	return sentence + "*" + nmeaChecksum(sentence) + "\r\n"
+	return nmea_sentence(sentence)
 
 
 def formatVHW(stw):
@@ -75,9 +82,9 @@ def formatVHW(stw):
 	stwn = '{:3.1f}'.format(stw)
 	stwk = ''
 
-	sentence = "$RMVHW,%s,T,%s,M,%s,N,%s,K" % (hdt, hdm, stwn, stwk)
+	sentence = "VHW,%s,T,%s,M,%s,N,%s,K" % (hdt, hdm, stwn, stwk)
 	
-	return sentence + "*" + nmeaChecksum(sentence) + "\r\n"
+	return nmea_sentence(sentence)
 
 
 def formatVLW(total, trip):
@@ -86,9 +93,9 @@ def formatVLW(total, trip):
 	total = '{:3.1f}'.format(total)
 	trip = '{:3.1f}'.format(trip)
 
-	sentence = "$RMVLW,%s,N,%s,N" % (total, trip)
+	sentence = "VLW,%s,N,%s,N" % (total, trip)
 	
-	return sentence + "*" + nmeaChecksum(sentence) + "\r\n"
+	return nmea_sentence(sentence)
 
 
 def formatMTW(mtw):
@@ -96,9 +103,9 @@ def formatMTW(mtw):
 		return None
 	tmp = '{:3.1f}'.format(mtw)
 
-	sentence = "$RMMTW,%s,C" % (tmp)
+	sentence = "MTW,%s,C" % (tmp)
 	
-	return sentence + "*" + nmeaChecksum(sentence) + "\r\n"
+	return nmea_sentence(sentence)
 
 
 def translate_st_to_nmea (data):
@@ -168,7 +175,7 @@ if __name__ == '__main__':
 	st1read =pigpio.pi()
 
 	try:
-		st1read.bb_serial_read_close(gpio) 	#close if already run
+		st1read.bb_serial_read_close(gpio) 	# close if already run
 	except:
 		pass
 	
