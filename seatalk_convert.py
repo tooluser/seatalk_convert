@@ -88,8 +88,10 @@ def formatVHW(byte2, byte3):
 	
 	return nmea_sentence(sentence)
 
+def formatVLW(byte1, byte2, byte3, byte4, byte5, byte6):
+	total = (byte2 + byte3*256 + (byte1 // 16)*4096) / 10
+	trip = (byte4 + byte5*256 + (byte6 & ord('\x0f'))*65536) / 100
 
-def formatVLW(total, trip):
 	if (trip == None) or (total == None):
 		return None
 	total = '{:3.1f}'.format(total)
@@ -108,7 +110,6 @@ def formatMTW(mtw):
 	sentence = "MTW,%s,C" % (tmp)
 	
 	return nmea_sentence(sentence)
-
 
 def translate_st_to_nmea (data):
 	global stw
@@ -138,9 +139,7 @@ def translate_st_to_nmea (data):
 			byte4 = getByte(bytes[4])
 			byte5 = getByte(bytes[5])
 			byte6 = getByte(bytes[6])
-			total = (byte2 + byte3*256 + (byte1 // 16)*4096) / 10
-			trip = (byte4 + byte5*256 + (byte6 & ord('\x0f'))*65536) / 100
-			return formatVLW(total, trip)
+			return formatVLW(byte1, byte2, byte3, byte4, byte5, byte6)
 		if datagram == ord('\x27'):
 			byte2 = getByte(bytes[2])
 			temp = (byte2 - 100.0)/10
