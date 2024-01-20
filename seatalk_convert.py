@@ -75,11 +75,12 @@ def formatHDM(byte1, byte2):
 	return nmea_sentence(sentence)
 
 
-def formatVHW(stw):
+def formatVHW(byte2, byte3):
+	stw = (byte3*256 + byte2 + 0.0)/10
 	if (hdg == None) or (stw == None) or (hdg < 0.1):
 		return None
 	hdm = ''
-	hdt=''
+	hdt = ''
 	stwn = '{:3.1f}'.format(stw)
 	stwk = ''
 
@@ -129,8 +130,7 @@ def translate_st_to_nmea (data):
 		if datagram == ord('\x20'):
 			byte2 = getByte(bytes[2])
 			byte3 = getByte(bytes[3])
-			stw = (byte3*256 + byte2 + 0.0)/10
-			return formatVHW(stw)
+			return formatVHW(byte2, byte3)
 		if datagram == ord('\x25'):
 			byte1 = getByte(bytes[1])
 			byte2 = getByte(bytes[2])
