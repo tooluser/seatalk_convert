@@ -60,7 +60,7 @@ def nmeaChecksum(s): # str -> two hex digits in str
 	else:
 		return '0'+hexstr
 
-def nmea_sentence(sentence)
+def nmea_sentence(sentence):
 	return "$" + talker + sentence + "*" + nmeaChecksum(sentence) + "\r\n"
 
 
